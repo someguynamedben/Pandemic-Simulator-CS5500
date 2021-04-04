@@ -1,6 +1,6 @@
 #include <iostream>
 #include <mpi.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <array>
 #include <vector>
 //#include <random>
@@ -274,27 +274,28 @@ int main(int argc, char **argv){
 
                 //send a person from the building queue
                 if(!buildingCap.empty()){
-                    int person[4];
+                    int tempPerson[4];
                     for(int i = 0; i < 4; ++i){
-                        person[i] = buildingCap[0][i];
+                        tempPerson[i] = buildingCap[0][i];
                     }
 
                     buildingCap.erase(buildingCap.begin());
 
-                    //calculate if person will be infected
-                    if(person[1] == 0 and infectedCount > 0){
+                    //calculate if tempPerson will be infected
+                    if(tempPerson[1] == 0 and infectedCount > 0){
                         if(willBeInfected(infectedCount)){
-                            person[1] = 1;
+                            tempPerson[1] = 1;
                         }
                     }
 
                     std::cout << "line 288" << std::endl;
-                    if(person[2] >= 3){
+                    if(tempPerson[2] >= 3){
                         //send home
-                        MPI_Isend(&person, 4, MPI_INT, person[0], 0, MCW, &request);
+                        MPI_Isend(&tempPerson, 4, MPI_INT, tempPerson[0], 0, MCW, &request);
                     }else{
                         //send to another building
-                        MPI_Isend(&person, 4, MPI_INT, getOddRank(size), 0, MCW, &request);
+                        tempPerson[2] += 1;
+                        MPI_Isend(&tempPerson, 4, MPI_INT, getOddRank(size), 0, MCW, &request);
                     }
                     std::cout << "line 296" << std::endl;
                 }
