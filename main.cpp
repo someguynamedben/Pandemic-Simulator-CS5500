@@ -60,6 +60,9 @@ int main(int argc, char **argv){
     while(numberOfDays > 0){
         std::cout << "NUMBER OF DAYS: " << numberOfDays << std::endl;
         if((rank % 2) == 0){
+            if(rank == 0){
+                person1[1] = 1;
+            }
             //homes
             MPI_Send(&person1, 4, MPI_INT, getOddRank(size), 1, MCW);
             MPI_Send(&person2, 4, MPI_INT, getOddRank(size), 2, MCW);
@@ -151,28 +154,28 @@ int main(int argc, char **argv){
             // check if each is infected or not
             if (person1[1] == 0){
                 if(willBeInfected(numInfected)){
-                    person1[1] == 1;
+                    person1[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
             if (person2[1] == 0){
                 if(willBeInfected(numInfected)){
-                    person2[1] == 1;
+                    person2[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
             if (person3[1] == 0){
                 if(willBeInfected(numInfected)){
-                    person3[1] == 1;
+                    person3[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
             if (person4[1] == 0){
                 if(willBeInfected(numInfected)){
-                    person4[1] == 1;
+                    person4[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
