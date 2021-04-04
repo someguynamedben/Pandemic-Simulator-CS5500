@@ -11,9 +11,9 @@ public:
     bool isFull();
     int getID();
     bool getIsAHome();
+    std::vector<Person> m_capacityArray[4];
 
 private:
-    std::vector<Person> m_capacityArray[4];
     bool m_isAHome;
     int m_buildingID;
 };

@@ -9,6 +9,7 @@ public:
     bool getIsImmune();
     bool getIsSick();
     int getHomeID();
+    int m_stopCount;
 
 private:
     int m_homeID;
