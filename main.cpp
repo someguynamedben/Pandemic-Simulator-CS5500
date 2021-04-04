@@ -71,9 +71,9 @@ int main(int argc, char **argv){
             numberOfPeople = 0;
 
             int returnerFlag = 0;
-            while(!returnerFlag){
+            while(!returnerFlag || numberOfPeople < 4){
                 MPI_Iprobe( MPI_ANY_SOURCE , 0 , MCW , &returnerFlag, &mystatus);
-                while(returnerFlag){
+                while(returnerFlag && numberOfPeople < 4){
                     std::cout << "line 74" << std::endl;
                     switch(numberOfPeople){
                         case 0:
