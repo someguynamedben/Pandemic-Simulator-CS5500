@@ -21,7 +21,7 @@ bool willBeInfected(int infectedCount){
 int getOddRank(int size){
     int number = 0;
 
-    while(number % 2 != 0){
+    while(number % 2 == 0){
         number = rand() % size;
     }
 
@@ -69,6 +69,8 @@ int main(int argc, char **argv){
             MPI_Send(&person3, 4, MPI_INT, getOddRank(size), 3, MCW);
             MPI_Send(&person4, 4, MPI_INT, getOddRank(size), 4, MCW);
             numberOfPeople = 0;
+
+            std::cout << "sent people out" << std::endl;
 
             int returnerFlag = 0;
             while(!returnerFlag || numberOfPeople < 4){
@@ -250,17 +252,18 @@ int main(int argc, char **argv){
                     isDayOver = true;
                     break;
                 }
-                std::cout << "line 250" << std::endl;
+//                std::cout << "line 250" << std::endl;
 
                 //fill the building
-                while(buildingCap.size() < 4) {
-                    MPI_Iprobe(MPI_ANY_SOURCE, !5, MCW, &messageFound, MPI_STATUS_IGNORE);
+                while(buildingCap.size() != 4) {
+                    MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MCW, &messageFound, MPI_STATUS_IGNORE);
+//                    std::cout << "line 260" << std::endl;
 
                     if (messageFound) {
                         std::cout << "line 257" << std::endl;
-                        MPI_Recv(&data, 4, MPI_INT, MPI_ANY_SOURCE, 0, MCW, MPI_STATUS_IGNORE);
+                        MPI_Recv(&data, 4, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MCW, MPI_STATUS_IGNORE);
 
-                        std::cout << "line 260" << std::endl;
+                        std::cout << "line 266" << std::endl;
 
                         if(data[1] == 1){
                             infectedCount += 1;
@@ -272,6 +275,7 @@ int main(int argc, char **argv){
                     }
                 }
 
+                std::cout << "line 278" << std::endl;
                 //send a person from the building queue
                 if(!buildingCap.empty()){
                     int tempPerson[4];
@@ -304,6 +308,7 @@ int main(int argc, char **argv){
 
         if(rank == 0){
             for(int i = 1; i < size; i += 2){
+                std::cout << "sending to: " << i << std::endl;
                 MPI_Send(&data, 4, MPI_INT, i, 5, MCW);
             }
         }
