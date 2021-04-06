@@ -1,9 +1,11 @@
 #include <iostream>
 #include <mpi.h>
 #include <cstdlib>
+#include <unistd.h>
+#include <stdlib.h>
 #include <array>
 #include <vector>
-//#include <random>
+#include <random>
 #include <fstream>
 
 #define MCW MPI_COMM_WORLD
@@ -59,7 +61,7 @@ int main(int argc, char **argv){
 
     while(numberOfDays > 0){
         isDayOver = false;
-        std::cout << "NUMBER OF DAYS: " << numberOfDays << std::endl;
+        std::cout << rank << "NUMBER OF DAYS: " << numberOfDays << std::endl;
         if((rank % 2) == 0){
             if(rank == 0){
                 person1[1] = 1;
@@ -71,13 +73,13 @@ int main(int argc, char **argv){
             MPI_Send(&person4[0], 4, MPI_INT, getOddRank(size), 1, MCW);
             numberOfPeople = 0;
 
-            std::cout << "sent people out" << std::endl;
+            std::cout << rank << " sent people out" << std::endl;
 
             int returnerFlag = 0;
             while(!returnerFlag || numberOfPeople < 4){
                 MPI_Iprobe( MPI_ANY_SOURCE , 2 , MCW , &returnerFlag, &mystatus);
                 while(returnerFlag && numberOfPeople < 4){
-                    std::cout << "line 74" << std::endl;
+                    std::cout << rank << "line 74" << std::endl;
                     switch(numberOfPeople){
                         case 0:
                         MPI_Recv(&person1[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
@@ -95,10 +97,12 @@ int main(int argc, char **argv){
                         MPI_Recv(&person4[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
                         break;
                     }
-                    std::cout << "line 92" << std::endl;
+                    std::cout << rank << "line 92" << std::endl;
                     numberOfPeople += 1;
                     MPI_Iprobe( MPI_ANY_SOURCE , 2 , MCW , &returnerFlag, &mystatus);
                 }
+                std::cout << "Everyone is home" << std::endl;
+                returnerFlag = 1;
             }
 
             int numNormal =  0;
@@ -195,34 +199,34 @@ int main(int argc, char **argv){
                 MPI_Probe( MPI_ANY_SOURCE , 6 , MCW , &mystatus);
                 int normFlag = 1;
                 while(normFlag){
-                    std::cout << "line 198" << std::endl;
+                    std::cout << rank << "line 198" << std::endl;
                     MPI_Recv(&normal , 1 , MPI_INT , MPI_ANY_SOURCE , 6 , MCW , &mystatus);
                     totalNormal += normal;
                     MPI_Iprobe( MPI_ANY_SOURCE , 6 , MCW , &normFlag , &mystatus);
                 }
 
-                std::cout << "line 204" << std::endl;
+                std::cout << rank << "line 204" << std::endl;
 
                 MPI_Probe( MPI_ANY_SOURCE , 7 , MCW , &mystatus);
                 int infFlag = 1;
                 while(infFlag){
-                    std::cout << "line 209" << std::endl;
+                    std::cout << rank << "line 209" << std::endl;
                     MPI_Recv(&infected , 1 , MPI_INT , MPI_ANY_SOURCE , 7 , MCW , &mystatus);
                     totalInfected += infected;
                     MPI_Iprobe( MPI_ANY_SOURCE , 7 , MCW , &infFlag , &mystatus);
                 }
 
-                std::cout << "line 215" << std::endl;
+                std::cout << rank << "line 215" << std::endl;
 
                 MPI_Probe( MPI_ANY_SOURCE , 8 , MCW , &mystatus);
                 int immFlag = 1;
                 while(immFlag){
-                    std::cout << "line 220" << std::endl;
+                    std::cout << rank << "line 220" << std::endl;
                     MPI_Recv(&immune , 1 , MPI_INT , MPI_ANY_SOURCE , 8 , MCW , &mystatus);
                     totalImmune += immune;
                     MPI_Iprobe( MPI_ANY_SOURCE , 8 , MCW , &immFlag , &mystatus);
                 }
-                std::cout << "225" << std::endl;
+                std::cout << rank << "225" << std::endl;
 
                 fout << "Day " << numberOfDays << ": " << std::endl;
                 fout << "Number of non-infected people: " << totalNormal << std::endl;
@@ -233,11 +237,11 @@ int main(int argc, char **argv){
 
             }
             else{
-                std::cout << "line 236" << std::endl;
+                std::cout << rank << "line 236" << std::endl;
                 MPI_Send( &numNormal , 1 , MPI_INT , 0 , 6 , MCW);
                 MPI_Send( &numInfected , 1 , MPI_INT , 0 , 7 , MCW);
                 MPI_Send( &numImmune , 1 , MPI_INT , 0 , 8 , MCW);
-                std::cout << "line 240" << std::endl;
+                std::cout << rank << "line 240" << std::endl;
             }
         }
         else{
@@ -248,7 +252,7 @@ int main(int argc, char **argv){
                 MPI_Iprobe(MPI_ANY_SOURCE, 5, MCW, &dayEndFlag, MPI_STATUS_IGNORE);
                 if(dayEndFlag){
                     if(rank ==1){
-                        std::cout << "line 251" << std::endl;
+                        std::cout << rank << "line 251" << std::endl;
                     }
                     MPI_Recv(&data[0], 4, MPI_INT, MPI_ANY_SOURCE, 5, MCW, MPI_STATUS_IGNORE);
                     isDayOver = true;
@@ -257,27 +261,28 @@ int main(int argc, char **argv){
 //                std::cout << "line 263" << std::endl;
 
                 //fill the building
+                sleep(rank/2);
                 while(buildingCap.size() < 4) {
-                    MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MCW, &messageFound, MPI_STATUS_IGNORE);
+                    MPI_Iprobe(MPI_ANY_SOURCE, 1, MCW, &messageFound, MPI_STATUS_IGNORE);
 //                    std::cout << rank << " got Message status: " << messageFound << std::endl;
 
                     if (messageFound) {
-                        if(rank ==1){
-                            std::cout << "line 264" << std::endl;
-                        }
-                        MPI_Recv(&data[0], 4, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MCW, MPI_STATUS_IGNORE);
+                        
+                        std::cout << rank << "line 264" << std::endl;
+                        
+                        MPI_Recv(&data[0], 4, MPI_INT, MPI_ANY_SOURCE, 1, MCW, MPI_STATUS_IGNORE);
 
-                        if(rank ==1){
-                            std::cout << "line 267" << std::endl;
-                        }
+                        
+                        std::cout << rank << "line 267" << std::endl;
+                        
 
                         if(data[1] == 1){
                             infectedCount += 1;
                         }
 
-                        std::cout << "Adding TO QUEUE~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+                        std::cout << rank << "Adding TO QUEUE~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
                         buildingCap.push_back(data);
-                        std::cout << "ADDED TO QUEUE Rank:" << rank << " holds " << buildingCap.size() << std::endl;
+                        std::cout << rank << "ADDED TO QUEUE Rank:" << rank << " holds " << buildingCap.size() << std::endl;
                     }else{
                         break;
                     }
@@ -290,7 +295,7 @@ int main(int argc, char **argv){
                     for(int i = 0; i < 4; ++i){
                         tempPerson[i] = buildingCap[0][i];
                     }
-                    
+
                     buildingCap.erase(buildingCap.begin());
 
                     //calculate if tempPerson will be infected
@@ -301,26 +306,28 @@ int main(int argc, char **argv){
                             }
                         }
                     }
-                    if(rank ==1){
-                        std::cout << "line 301" << std::endl;
-                    }
+                    
+                    std::cout << rank << "line 301" << std::endl;
+                    
                     if(tempPerson[2] >= 3){
                         if(tempPerson[1] == 1){
                             infectedCount--;
                         }
                         //send home
-                        MPI_Isend(&tempPerson[0], 4, MPI_INT, tempPerson[0], 0, MCW, &request);
+                        std::cout << rank << "sending home to " << tempPerson[0] << std::endl;
+                        MPI_Isend(&tempPerson[0], 4, MPI_INT, tempPerson[0], 2, MCW, &request);
                     }else{
                         if(tempPerson[1] == 1){
                             infectedCount--;
                         }
                         //send to another building
                         tempPerson[2] += 1;
-                        MPI_Isend(&tempPerson[0], 4, MPI_INT, getOddRank(size), 0, MCW, &request);
+                        std::cout << rank << "sending to next building" << std::endl;
+                        MPI_Isend(&tempPerson[0], 4, MPI_INT, getOddRank(size), 1, MCW, &request);
                     }
-                    if(rank ==1){
-                        std::cout << "line 316" << std::endl;
-                    }
+                    
+                    std::cout << rank << "line 316" << std::endl;
+                    
                 }
             }
         }
@@ -328,7 +335,7 @@ int main(int argc, char **argv){
         std::cout << "Sending Kill code" << std::endl;
         if(rank == 0){
             for(int i = 1; i < size; i += 2){
-                std::cout << "sending to: " << i << std::endl;
+                std::cout << rank << "sending to: " << i << std::endl;
                 MPI_Send(&data[0], 4, MPI_INT, i, 5, MCW);
             }
         }
