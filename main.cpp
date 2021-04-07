@@ -75,34 +75,32 @@ int main(int argc, char **argv){
 
             std::cout << rank << " sent people out" << std::endl;
 
-            int returnerFlag = 0;
-            while(!returnerFlag || numberOfPeople < 4){
-                MPI_Iprobe( MPI_ANY_SOURCE , 2 , MCW , &returnerFlag, &mystatus);
-                while(returnerFlag && numberOfPeople < 4){
-                    std::cout << rank << "line 74" << std::endl;
-                    switch(numberOfPeople){
-                        case 0:
-                        MPI_Recv(&person1[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
-                        break;
-
-                        case 1:
-                        MPI_Recv(&person2[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
-                        break;
-
-                        case 2:
-                        MPI_Recv(&person3[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
-                        break;
-
-                        case 3:
-                        MPI_Recv(&person4[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
-                        break;
-                    }
-                    std::cout << rank << "line 92" << std::endl;
+            
+            while(numberOfPeople < 4){
+                MPI_Probe( MPI_ANY_SOURCE , 2 , MCW , &mystatus);
+                std::cout << rank << "line 74" << std::endl;
+                switch(numberOfPeople){
+                    case 0:
+                    MPI_Recv(&person1[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
                     numberOfPeople += 1;
-                    MPI_Iprobe( MPI_ANY_SOURCE , 2 , MCW , &returnerFlag, &mystatus);
+                    break;
+
+                    case 1:
+                    MPI_Recv(&person2[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
+                    numberOfPeople += 1;
+                    break;
+
+                    case 2:
+                    MPI_Recv(&person3[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
+                    numberOfPeople += 1;
+                    break;
+
+                    case 3:
+                    MPI_Recv(&person4[0], 4, MPI_INT, MPI_ANY_SOURCE, 2, MCW, &mystatus);
+                    numberOfPeople += 1;
+                    break;
                 }
-                // std::cout << "Everyone is home" << std::endl;
-                returnerFlag = 1;
+                std::cout << rank << "line 92" << std::endl;
             }
 
             int numNormal =  0;
@@ -158,28 +156,28 @@ int main(int argc, char **argv){
             }
             
             // check if each person gets infected or not
-            if (person1[1] == 0){
+            if (person1[1] == 0 && numInfected > 0){
                 if(willBeInfected(numInfected)){
                     person1[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
-            if (person2[1] == 0){
+            if (person2[1] == 0 && numInfected > 0){
                 if(willBeInfected(numInfected)){
                     person2[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
-            if (person3[1] == 0){
+            if (person3[1] == 0 && numInfected > 0){
                 if(willBeInfected(numInfected)){
                     person3[1] = 1;
                     numNormal -= 1;
                     numInfected += 1;
                 }
             }
-            if (person4[1] == 0){
+            if (person4[1] == 0 && numInfected > 0){
                 if(willBeInfected(numInfected)){
                     person4[1] = 1;
                     numNormal -= 1;
@@ -187,7 +185,7 @@ int main(int argc, char **argv){
                 }
             }
 
-            // check if a person becomes immune
+            // check if each person becomes immune after being sick for 3 days
             if (person1[1] == 1 && person1[3] < 3){
                 person1[3] += 1;
                 if(person1[3] >= 3){
@@ -297,8 +295,8 @@ int main(int argc, char **argv){
 //                std::cout << "line 263" << std::endl;
 
                 //fill the building
-                sleep(rank/2);
                 while(buildingCap.size() < 4) {
+                    sleep(rank/size);
                     MPI_Iprobe(MPI_ANY_SOURCE, 1, MCW, &messageFound, MPI_STATUS_IGNORE);
 //                    std::cout << rank << " got Message status: " << messageFound << std::endl;
 
@@ -327,9 +325,9 @@ int main(int argc, char **argv){
 
                 //send a person from the building queue
                 if(!buildingCap.empty()){
-                    std::vector<int> tempPerson = {0, 0, 0, 0};
+                    std::vector<int> tempPerson ;
                     for(int i = 0; i < 4; ++i){
-                        tempPerson[i] = buildingCap[0][i];
+                        tempPerson.push_back(buildingCap[0][i]);
                     }
 
                     buildingCap.erase(buildingCap.begin());
