@@ -56,6 +56,7 @@ int main(int argc, char **argv){
     std::ofstream fout;
 
     if(rank == 0){
+        person1[1] = 1;
         fout.open("testing.txt");
     }
 
@@ -63,9 +64,6 @@ int main(int argc, char **argv){
         isDayOver = false;
         std::cout << rank << "NUMBER OF DAYS: " << numberOfDays << std::endl;
         if((rank % 2) == 0){
-            if(rank == 0){
-                person1[1] = 1;
-            }
             //homes
             MPI_Send(&person1[0], 4, MPI_INT, getOddRank(size), 1, MCW);
             MPI_Send(&person2[0], 4, MPI_INT, getOddRank(size), 1, MCW);
