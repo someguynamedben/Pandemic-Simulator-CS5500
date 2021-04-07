@@ -101,7 +101,7 @@ int main(int argc, char **argv){
                     numberOfPeople += 1;
                     MPI_Iprobe( MPI_ANY_SOURCE , 2 , MCW , &returnerFlag, &mystatus);
                 }
-                std::cout << "Everyone is home" << std::endl;
+                // std::cout << "Everyone is home" << std::endl;
                 returnerFlag = 1;
             }
 
@@ -157,7 +157,7 @@ int main(int argc, char **argv){
                 numImmune += 1;
             }
             
-            // check if each is infected or not
+            // check if each person gets infected or not
             if (person1[1] == 0){
                 if(willBeInfected(numInfected)){
                     person1[1] = 1;
@@ -186,6 +186,42 @@ int main(int argc, char **argv){
                     numInfected += 1;
                 }
             }
+
+            // check if a person becomes immune
+            if (person1[1] == 1 && person1[3] < 3){
+                person1[3] += 1;
+                if(person1[3] >= 3){
+                    person1[1] = 2;
+                    numInfected -= 1;
+                    numImmune += 1;
+                }
+            }
+            if (person2[1] == 1 && person2[3] < 3){
+                person2[3] += 1;
+                if(person2[3] >= 3){
+                    person2[1] = 2;
+                    numInfected -= 1;
+                    numImmune += 1;
+                }
+            }
+            if (person3[1] == 1 && person3[3] < 3){
+                person3[3] += 1;
+                if(person3[3] >= 3){
+                    person3[1] = 2;
+                    numInfected -= 1;
+                    numImmune += 1;
+                }
+            }
+            if (person4[1] == 1 && person4[3] < 3){
+                person4[3] += 1;
+                if(person4[3] >= 3){
+                    person4[1] = 2;
+                    numInfected -= 1;
+                    numImmune += 1;
+                }
+            }
+
+
 
             if(rank == 0){
                 int totalNormal = numNormal;
@@ -342,6 +378,9 @@ int main(int argc, char **argv){
 
         numberOfDays--;
         MPI_Barrier( MCW );
+    }
+    if(!rank){
+        fout.close();
     }
 
     MPI_Finalize();
