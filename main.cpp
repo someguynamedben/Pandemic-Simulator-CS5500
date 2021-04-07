@@ -11,7 +11,7 @@
 #define MCW MPI_COMM_WORLD
 
 bool willBeInfected(int infectedCount){
-    int chance = 10 * infectedCount;    //10% chance per person
+    int chance = 25 * infectedCount;    //10% chance per person
 
     if(rand() % 100 < chance){
         return true;
@@ -52,7 +52,7 @@ int main(int argc, char **argv){
     std::vector<int> person4 = {rank,0,0,0};
 
     int numberOfPeople;
-    int numberOfDays = 10;
+    int numberOfDays = 25;
     std::ofstream fout;
 
     if(rank == 0){
@@ -184,7 +184,7 @@ int main(int argc, char **argv){
             }
 
             // check if each person becomes immune after being sick for 3 days
-            if (person1[1] == 1 && person1[3] < 3){
+            if (person1[1] == 1 && person1[3] < 4){
                 person1[3] += 1;
                 if(person1[3] >= 3){
                     person1[1] = 2;
@@ -290,7 +290,7 @@ int main(int argc, char **argv){
 
                 //fill the building
                 while(buildingCap.size() < 4) {
-                    sleep(3);
+                    sleep(0.25);
                     MPI_Iprobe(MPI_ANY_SOURCE, 1, MCW, &messageFound, MPI_STATUS_IGNORE);
 //                    std::cout << rank << " got Message status: " << messageFound << std::endl;
 
